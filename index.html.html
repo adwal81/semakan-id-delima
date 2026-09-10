@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DELIMa Student ID Checker @ KERIS - SK Kerubong</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        * {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        
+        .bg-navy-900 { background-color: #0B132B; }
+        .bg-navy-800 { background-color: #1C2541; }
+        .bg-navy-700 { background-color: #2A365C; }
+        .border-navy-700 { border-color: #2A365C; }
+        .text-gold-400 { color: #F59E0B; }
+        .bg-gold-500 { background-color: #D97706; }
+
+        /* Glassmorphism effects */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        
+        .dark-glass {
+            background: rgba(28, 37, 65, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        body {
+            overflow-x: hidden;
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col justify-between">
+
+    <header class="bg-navy-900 text-white shadow-lg border-b-4 border-amber-500 sticky top-0 z-30">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-300 flex items-center justify-center shadow-md text-navy-900 font-black text-xl tracking-wider">
+                        SKK
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold uppercase tracking-wider text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30">UNIT ICT SK KERUBONG</span>
+                            <span id="dataSyncBadge" class="text-xs font-medium text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Data Tempatan
+                            </span>
+                        </div>
+                        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+                            DELIMa Student ID Checker <span class="text-amber-400 font-extrabold text-sm sm:text-base bg-navy-800 px-2 py-0.5 rounded border border-amber-500/30">@KERIS</span>
+                        </h1>
+                    </div>
+                </div>
+
+                <!-- Quick Actions & Config Button -->
+                <div class="flex items-center gap-2 self-end md:self-auto">
+                    <!-- Mode Switcher -->
+                    <div class="bg-navy-800 p-1 rounded-xl flex items-center border border-slate-700 text-xs font-bold">
+                        <button id="btnModeStudent" onclick="switchMainMode('student')" class="px-3 py-1.5 rounded-lg bg-amber-500 text-navy-900 transition-all flex items-center gap-1">
+                            <i data-lucide="user-search" class="w-3.5 h-3.5"></i>
+                            <span>Paparan Murid</span>
+                        </button>
+                        <button id="btnModeAdmin" onclick="switchMainMode('admin')" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1">
+                            <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+                            <span id="btnAdminLabel">Dashboard Guru</span>
+                        </button>
+                        <button id="btnLockAdmin" onclick="lockAdminDashboard()" class="hidden px-2 py-1.5 rounded-lg text-rose-400 hover:bg-rose-950/50 transition-all" title="Kunci Dashboard Admin">
+                            <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full flex-grow">
+        
+        <!-- SECTION 1: PAPARAN MURID (STUDENT LOOKUP PORTAL) -->
+        <section id="studentPortalSection" class="max-w-3xl mx-auto py-4 space-y-6">
+            <div class="text-center space-y-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold border border-amber-300">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-600"></i> Semakan Pantas ID DELIMa Murid
+                </span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-navy-900">Cari ID DELIMa & Kata Laluan Anda</h2>
+                <p class="text-xs sm:text-sm text-slate-500">Taip nama pendek atau nama anda di bawah, kemudian tekan pada nama yang betul.</p>
+            </div>
+
+            <!-- Focused Student Search Box -->
+            <div class="relative max-w-xl mx-auto">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-amber-500">
+                        <i data-lucide="search" class="w-6 h-6"></i>
+                    </div>
+                    <input type="text" id="studentSearchInput" oninput="handleStudentSearch()" placeholder="Masukkan nama murid (cth: Adam, Rayyan, Sara)..." 
+                           class="w-full pl-12 pr-10 py-4 bg-white border-2 border-slate-300 rounded-2xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-amber-500/20 focus:border-amber-500 text-base sm:text-lg font-semibold shadow-lg transition-all">
+                    <button id="btnClearStudentSearch" onclick="clearStudentSearch()" class="hidden absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <p class="text-[11px] text-slate-400 text-center mt-2">💡 Petua: Cukup sekadar taip nama panggilan pendek sahaja.</p>
+            </div>
+
+            <!-- Real-time Matching Names Grid -->
+            <div id="studentSearchResultsContainer" class="hidden space-y-3">
+                <div class="flex items-center justify-between text-xs font-bold text-slate-500 px-1">
+                    <span>Sila pilih nama anda dari senarai:</span>
+                    <span id="matchingCountBadge" class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full">0 dijumpai</span>
+                </div>
+                
+                <div id="studentResultsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Dynamic matching student cards appear here -->
+                </div>
+            </div>
+
+            <!-- Search Prompt / Initial State -->
+            <div id="studentInitialState" class="bg-white rounded-2xl p-8 text-center border border-slate-200 shadow-sm max-w-xl mx-auto">
+                <div class="w-16 h-16 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="user-check" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">Sedia Untuk Semakan</h3>
+                <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">Mula menaip nama anda di ruangan carian di atas untuk memaparkan rekod ID DELIMa.</p>
+            </div>
+
+            <!-- No Results Found State -->
+            <div id="studentNoResultsState" class="hidden bg-white rounded-2xl p-8 text-center border border-slate-200 shadow-sm max-w-xl mx-auto">
+                <div class="w-16 h-16 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="user-x" class="w-8 h-8"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">Nama Tidak Dijumpai</h3>
+                <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">Sila semak ejaan nama anda atau hubungi Guru ICT / Guru Kelas jika belum pendaftaran ID.</p>
+            </div>
+        </section>
+
+        <!-- SECTION 2: DASHBOARD GURU / UNIT ICT (ADMIN VIEW) -->
+        <div id="adminDashboardSection" class="hidden">
+
+            <!-- Admin Exclusive Data Control Bar -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 bg-navy-900 text-white p-4 rounded-2xl border-l-4 border-amber-500 shadow-md">
+                <div>
+                    <h3 class="font-bold text-base flex items-center gap-2 text-white">
+                        <i data-lucide="database" class="w-5 h-5 text-amber-400"></i> Pengurusan Data Murid
+                    </h3>
+                    <p class="text-xs text-slate-300 mt-0.5">Muat naik fail CSV atau sambungkan ke Google Sheets untuk kemaskini rekod murid.</p>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap self-end sm:self-auto">
+                    <!-- CSV Upload Button (Admin Only) -->
+                    <label for="directCsvInput" class="cursor-pointer flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white border border-emerald-500/40 transition-all shadow-sm">
+                        <i data-lucide="file-up" class="w-4 h-4"></i>
+                        <span>Muat Naik CSV</span>
+                        <input type="file" id="directCsvInput" accept=".csv" class="hidden" onchange="handleDirectCsvUpload(event)">
+                    </label>
+
+                    <!-- Google Sheets Integration Button (Admin Only) -->
+                    <button id="btnOpenConnectModal" onclick="openConnectModal()" class="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-400 border border-amber-500/30 transition-all shadow-sm">
+                        <i data-lucide="database" class="w-4 h-4"></i>
+                        <span>Google Sheets</span>
+                    </button>
+
+                    <!-- Refresh Button -->
+                    <button onclick="refreshData()" class="p-2 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 transition-colors border border-slate-700" title="Muat Semula Data">
+                        <i data-lucide="refresh-cw" class="w-4 h-4" id="refreshIcon"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Summary Section -->
+            <section class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <!-- Card 1: Jumlah Murid -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-xl">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Jumlah Murid</p>
+                        <h3 id="statTotalStudents" class="text-xl sm:text-2xl font-black text-navy-900">0</h3>
+                    </div>
+                </div>
+
+                <!-- Card 2: ID Lengkap -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
+                        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">ID Lengkap</p>
+                        <h3 id="statCompleteIds" class="text-xl sm:text-2xl font-black text-emerald-600">0</h3>
+                    </div>
+                </div>
+
+                <!-- Card 3: Perlu Semakan / Belum Ada -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl">
+                        <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Perlu Semakan</p>
+                        <h3 id="statPendingIds" class="text-xl sm:text-2xl font-black text-amber-600">0</h3>
+                    </div>
+                </div>
+
+                <!-- Card 4: Peratus Kelengkapan -->
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xl">
+                        <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Kelengkapan</p>
+                        <h3 id="statCompletionRate" class="text-xl sm:text-2xl font-black text-indigo-600">0%</h3>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search Bar & Filters -->
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-3 mb-6 bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                <!-- Main Search Input -->
+                <div class="relative w-full lg:w-1/2">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                    </div>
+                    <input type="text" id="searchInput" onkeyup="handleSearch()" placeholder="Taip nama murid atau ID DELIMa..." 
+                           class="w-full pl-11 pr-10 py-3 bg-white border border-slate-300 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm sm:text-base font-medium shadow-inner transition-all">
+                    <button id="btnClearSearch" onclick="clearSearch()" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Filters Group -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full lg:w-1/2">
+                    <!-- Year Filter -->
+                    <div>
+                        <select id="filterYear" onchange="handleFilterChange()" class="w-full bg-white border border-slate-300 text-slate-700 text-sm rounded-xl focus:ring-amber-500 focus:border-amber-500 p-2.5 font-medium shadow-sm">
+                            <option value="">Semua Tahun</option>
+                            <option value="Tahun 1">Tahun 1</option>
+                            <option value="Tahun 2">Tahun 2</option>
+                            <option value="Tahun 3">Tahun 3</option>
+                            <option value="Tahun 4">Tahun 4</option>
+                            <option value="Tahun 5">Tahun 5</option>
+                            <option value="Tahun 6">Tahun 6</option>
+                        </select>
+                    </div>
+
+                    <!-- Dynamic Class Filter -->
+                    <div>
+                        <select id="filterClass" onchange="handleFilterChange()" class="w-full bg-white border border-slate-300 text-slate-700 text-sm rounded-xl focus:ring-amber-500 focus:border-amber-500 p-2.5 font-medium shadow-sm">
+                            <option value="">Semua Kelas</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div class="col-span-2 sm:col-span-1">
+                        <select id="filterStatus" onchange="handleFilterChange()" class="w-full bg-white border border-slate-300 text-slate-700 text-sm rounded-xl focus:ring-amber-500 focus:border-amber-500 p-2.5 font-medium shadow-sm">
+                            <option value="">Semua Status</option>
+                            <option value="AKTIF">🟢 Aktif / Lengkap</option>
+                            <option value="PERLU SEMAKAN">🟠 Perlu Semakan</option>
+                            <option value="BELUM ADA">🔴 Belum Ada</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Year Tabs -->
+            <div class="mt-4 pt-4 border-t border-slate-200 flex items-center gap-1 overflow-x-auto pb-1 text-xs sm:text-sm font-semibold text-slate-600">
+                <span class="text-xs uppercase text-slate-400 font-bold mr-2 whitespace-nowrap">PILIH TAHUN:</span>
+                <button onclick="selectYearTab('')" class="year-tab px-3 py-1.5 rounded-lg bg-navy-900 text-white shadow-sm transition-all whitespace-nowrap font-bold" data-year="">Semua</button>
+                <button onclick="selectYearTab('Tahun 1')" class="year-tab px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all whitespace-nowrap" data-year="Tahun 1">Tahun 1</button>
+                <button onclick="selectYearTab('Tahun 2')" class="year-tab px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all whitespace-nowrap" data-year="Tahun 2">Tahun 2</button>
+                <button onclick="selectYearTab('Tahun 3')" class="year-tab px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all whitespace-nowrap" data-year="Tahun 3">Tahun 3</button>
+                <button onclick="selectYearTab('Tahun 4')" class="year-tab px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all whitespace-nowrap" data-year="Tahun 4">Tahun 4</button>
+                <button onclick="selectYearTab('Tahun 5')" class="year-tab px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all whitespace-nowrap" data-year="Tahun 5">Tahun 5</button>
+                <button onclick="selectYearTab('Tahun 6')" class="year-tab px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all whitespace-nowrap" data-year="Tahun 6">Tahun 6</button>
+            </div>
+
+            <!-- Student Table & Analytics View Tabs -->
+            <section class="glass-card rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200 mt-6">
+                <!-- Table Header Toolbar -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            <i data-lucide="list" class="w-5 h-5 text-amber-500"></i>
+                            <span>Senarai Rekod Murid</span>
+                            <span id="resultsCountBadge" class="ml-2 bg-slate-100 text-slate-700 text-xs px-2.5 py-1 rounded-full font-bold">0 rekod</span>
+                        </h2>
+                    </div>
+
+                    <div class="flex items-center gap-2 self-end sm:self-auto">
+                        <!-- Export / Print -->
+                        <button onclick="window.print()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center gap-1 transition-colors border border-slate-300">
+                            <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                            <span>Cetak</span>
+                        </button>
+                        <!-- Class Overview Toggle -->
+                        <button onclick="toggleViewMode()" id="btnToggleView" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-900 text-white flex items-center gap-1 transition-colors shadow-sm">
+                            <i data-lucide="pie-chart" class="w-3.5 h-3.5"></i>
+                            <span id="toggleViewText">Ringkasan Kelas</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Container -->
+                <div id="tableViewSection" class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-600 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                                <th class="py-3.5 px-4 w-12 text-center">BIL</th>
+                                <th class="py-3.5 px-4">NAMA MURID</th>
+                                <th class="py-3.5 px-4 w-32">KELAS</th>
+                                <th class="py-3.5 px-4">ID DELIMa</th>
+                                <th class="py-3.5 px-4 w-36 text-center">STATUS</th>
+                                <th class="py-3.5 px-4 w-28 text-center">TINDAKAN</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentTableBody" class="divide-y divide-slate-100">
+                            <!-- Rows rendered dynamically -->
+                        </tbody>
+                    </table>
+
+                    <!-- Empty state -->
+                    <div id="emptyState" class="hidden py-12 text-center">
+                        <div class="w-16 h-16 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+                            <i data-lucide="search-x" class="w-8 h-8"></i>
+                        </div>
+                        <h3 class="text-base font-bold text-slate-700">Tiada Rekod Dijumpai</h3>
+                        <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">Sila semak kata kunci carian atau tetapan tapisan kelas anda.</p>
+                    </div>
+                </div>
+
+                <!-- Class Analytics Breakdown View (Hidden by default) -->
+                <div id="classAnalyticsSection" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                    <!-- Dynamic Class Cards populate here -->
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Student Detail Modal (Populated on Clicking Student Name) -->
+    <div id="studentDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-200 transform transition-all">
+            
+            <!-- Modal Header -->
+            <div class="bg-navy-900 text-white p-6 relative border-b-4 border-amber-500">
+                <button onclick="closeStudentModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-navy-800 p-1.5 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div class="w-12 h-12 rounded-2xl bg-amber-500 text-navy-900 font-extrabold flex items-center justify-center text-xl shadow-md mb-3">
+                    <i data-lucide="user" class="w-6 h-6"></i>
+                </div>
+                <span id="modalStudentClassBadge" class="text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                    -
+                </span>
+                <h3 id="modalStudentFullName" class="font-bold text-xl sm:text-2xl text-white mt-1 leading-snug">
+                    -
+                </h3>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="p-6 space-y-4">
+                <!-- Status & ID Field -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-xs font-bold text-slate-500 uppercase">ID DELIMa</label>
+                        <span id="modalStatusBadge" class="px-2 py-0.5 font-bold rounded bg-emerald-100 text-emerald-800 text-[10px]">AKTIF</span>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
+                        <span id="modalStudentDelimaId" class="font-mono text-sm sm:text-base font-bold text-slate-800 break-all flex-grow">-</span>
+                        <button onclick="copyModalId()" class="px-3 py-1.5 text-xs font-bold bg-navy-900 hover:bg-navy-800 text-white rounded-lg transition-colors flex items-center gap-1 shrink-0">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Kata Laluan Standar</label>
+                    <div class="flex items-center gap-2 bg-slate-100 p-3 rounded-xl border border-slate-200">
+                        <span id="modalStudentPassword" class="font-mono text-sm sm:text-base font-bold text-slate-800 break-all flex-grow">••••••••</span>
+                        <button onclick="togglePasswordVisibility()" class="px-2.5 py-1.5 text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg transition-colors flex items-center gap-1 shrink-0">
+                            <i data-lucide="eye" class="w-3.5 h-3.5" id="pwEyeIcon"></i> <span id="pwToggleText">Papar</span>
+                        </button>
+                        <button onclick="copyModalPassword()" class="px-3 py-1.5 text-xs font-bold bg-navy-900 hover:bg-navy-800 text-white rounded-lg transition-colors flex items-center gap-1 shrink-0">
+                            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Salin
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pautan Direct ke Portal DELIMa KPM -->
+                <div class="pt-1">
+                    <a href="https://d3.delima.edu.my/landing" target="_blank" rel="noopener noreferrer" class="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-navy-900 font-extrabold rounded-xl text-center flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all border border-amber-400">
+                        <i data-lucide="external-link" class="w-4.5 h-4.5"></i>
+                        <span>Buka Portal DELIMa KPM</span>
+                    </a>
+                </div>
+
+                <div class="pt-2 text-[11px] text-slate-400 text-center">
+                    💡 Hubungi Guru ICT jika mengalami sebarang masalah log masuk ke portal DELIMa.
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-50 px-6 py-3 border-t border-slate-200 text-right">
+                <button onclick="closeStudentModal()" class="px-4 py-2 text-xs font-bold bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl transition-colors">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Login Modal -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden border border-slate-200 transform transition-all">
+            <div class="bg-navy-900 text-white p-6 border-b-4 border-amber-500 text-center relative">
+                <button onclick="closeAdminLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-navy-800 p-1.5 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div class="w-12 h-12 rounded-2xl bg-amber-500 text-navy-900 font-extrabold flex items-center justify-center text-xl shadow-md mx-auto mb-3">
+                    <i data-lucide="shield-lock" class="w-6 h-6"></i>
+                </div>
+                <h3 class="font-bold text-xl text-white">Akses Dashboard Guru</h3>
+                <p class="text-xs text-slate-300 mt-1">Sila masukkan kata laluan pentadbir untuk meneruskan.</p>
+            </div>
+            <form onsubmit="handleAdminLoginSubmit(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1.5">Kata Laluan Admin:</label>
+                    <div class="relative">
+                        <input type="password" id="adminPasswordInput" placeholder="Masukkan kata laluan..." required
+                               class="w-full px-4 py-3 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 focus:outline-none text-sm font-semibold text-slate-800 pr-10">
+                        <button type="button" onclick="toggleAdminPasswordVisibility()" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600">
+                            <i data-lucide="eye" class="w-4 h-4" id="adminPwEyeIcon"></i>
+                        </button>
+                    </div>
+                    <p id="adminLoginError" class="hidden text-xs font-bold text-rose-600 mt-2 flex items-center gap-1">
+                        <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Kata laluan tidak sah! Sila cuba lagi.
+                    </p>
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="button" onclick="closeAdminLoginModal()" class="w-1/2 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+                        Batal
+                    </button>
+                    <button type="submit" class="w-1/2 py-2.5 text-xs font-bold text-navy-900 bg-amber-500 hover:bg-amber-600 rounded-xl shadow transition-all flex items-center justify-center gap-1">
+                        <i data-lucide="key-round" class="w-3.5 h-3.5"></i> Log Masuk
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Google Sheets Connect Modal -->
+    <div id="connectModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden border border-slate-200 max-h-[90vh] flex flex-col">
+            
+            <!-- Modal Header -->
+            <div class="bg-navy-900 text-white px-6 py-4 flex items-center justify-between border-b-2 border-amber-500">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 rounded-lg bg-amber-500 text-navy-900 font-bold">
+                        <i data-lucide="database" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-lg">Sambungan Google Sheets</h3>
+                        <p class="text-xs text-slate-300">Integrasi Live Data tanpa edit koding HTML</p>
+                    </div>
+                </div>
+                <button onclick="closeConnectModal()" class="text-slate-400 hover:text-white transition-colors p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Content -->
+            <div class="p-6 overflow-y-auto space-y-5 text-xs sm:text-sm text-slate-700">
+                
+                <!-- Notice Banner -->
+                <div class="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3 text-amber-900">
+                    <i data-lucide="info" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5"></i>
+                    <div>
+                        <p class="font-bold">Sambung Data Sebenar SK Kerubong</p>
+                        <p class="text-xs text-amber-800 mt-0.5">Masukkan URL Web App dari Google Sheets anda atau muat naik fail CSV untuk menggantikan data sampel ini.</p>
+                    </div>
+                </div>
+
+                <!-- Input Web App URL -->
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1.5">Google Sheets Web App URL / CSV URL:</label>
+                    <input type="url" id="sheetUrlInput" placeholder="https://script.google.com/macros/s/.../exec" 
+                           class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs sm:text-sm font-mono">
+                    <p class="text-[11px] text-slate-500 mt-1">Pastikan skrip Google Apps Script dipasang sebagai <i>Web App (Anyone/Sesiapa sahaja)</i>.</p>
+                </div>
+
+                <!-- Upload File Option -->
+                <div class="pt-2 border-t border-slate-200">
+                    <label class="block font-bold text-slate-800 mb-1.5">Atau Muat Naik Fail CSV Data Murid:</label>
+                    <input type="file" id="csvFileInput" accept=".csv" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-navy-900 file:text-white hover:file:bg-navy-800">
+                </div>
+
+                <!-- Instructions Accordion / Script Guide -->
+                <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2">
+                    <h4 class="font-bold text-navy-900 flex items-center justify-between cursor-pointer" onclick="toggleScriptGuide()">
+                        <span class="flex items-center gap-1.5"><i data-lucide="code" class="w-4 h-4 text-amber-500"></i> Panduan & Kod Google Apps Script</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 transition-transform" id="guideChevron"></i>
+                    </h4>
+                    
+                    <div id="scriptGuideContent" class="hidden space-y-2 pt-2">
+                        <p class="text-xs text-slate-600">Struktur lajur Google Sheet mestilah:</p>
+                        <div class="bg-slate-200 text-slate-800 font-mono px-3 py-1.5 rounded text-xs">
+                            BIL | NAMA MURID | KELAS | ID DELIMa | STATUS | KATA LALUAN
+                        </div>
+                        <p class="text-xs text-slate-600">Kod Google Apps Script (Buka Google Sheet &rarr; Extensions &rarr; Apps Script):</p>
+                        <pre class="bg-slate-900 text-emerald-400 p-3 rounded-lg text-[11px] font-mono overflow-x-auto select-all">
+function doGet() {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = sheet.getDataRange().getValues();
+  var rows = [];
+  for (var i = 1; i < data.length; i++) {
+    rows.push({
+      bil: data[i][0],
+      nama: data[i][1],
+      kelas: data[i][2],
+      idDelima: data[i][3],
+      status: data[i][4],
+      kataLaluan: data[i][5] || '#Mba2030'
+    });
+  }
+  return ContentService.createTextOutput(JSON.stringify(rows))
+    .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="bg-slate-50 px-6 py-4 flex items-center justify-between border-t border-slate-200">
+                <button onclick="resetToSampleData()" class="text-xs text-rose-600 hover:text-rose-800 font-bold flex items-center gap-1">
+                    <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Set Semula ke Data Sampel
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="closeConnectModal()" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors">
+                        Batal
+                    </button>
+                    <button onclick="saveConnectionSettings()" class="px-4 py-2 text-xs font-bold text-navy-900 bg-amber-500 hover:bg-amber-600 rounded-xl shadow transition-all">
+                        Simpan & Kemaskini Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-navy-900 text-white px-4 py-3 rounded-xl shadow-2xl border border-amber-500/50 flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 z-50">
+        <i data-lucide="check-circle" class="w-5 h-5 text-amber-400" id="toastIcon"></i>
+        <span id="toastMessage" class="text-xs sm:text-sm font-semibold">Mesej Notifikasi</span>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-navy-900 text-slate-400 text-xs py-4 px-4 border-t border-slate-800 mt-8">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
+            <p>© 2026 Unit ICT SK Kerubong. Hak Cipta Terelihara.</p>
+            <p class="flex items-center gap-1">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i> Diresmikan untuk kegunaan warga SK KERIS
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Default Google Apps Script URL for SK Kerubong
+        const DEFAULT_SHEET_URL = "https://script.google.com/macros/s/AKfycbzVjW9gDm3GoyRTodq7ZSFqro_zPzBM96XLCqf-aWiPM7KOhBN_8H_Fxj9OnQP3CMxKVQ/exec";
+
+        // Standard Default Password for SK Kerubong
+        const DEFAULT_PASSWORD = "#Mba2030";
+
+        let isAdminLoggedIn = false;
+
+        // Dummy data removed completely. State starts clean.
+        const SAMPLE_STUDENTS = [];
+
+        // Application Global State
+        let currentData = [];
+        let filteredData = [];
+        let currentView = 'table';
+        let currentYearTab = '';
+        let currentSelectedStudent = null;
+        let isPasswordVisible = false;
+
+        function parseCSVLine(line) {
+            const result = [];
+            let startValue = 0;
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                if (line[i] === '"') {
+                    inQuotes = !inQuotes;
+                } else if ((line[i] === ',' || line[i] === ';') && !inQuotes) {
+                    let val = line.substring(startValue, i).trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+                    result.push(val);
+                    startValue = i + 1;
+                }
+            }
+            let val = line.substring(startValue).trim().replace(/^"|"$/g, '').replace(/""/g, '"');
+            result.push(val);
+            return result;
+        }
+
+        function handleDirectCsvUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                parseCSVFile(file);
+            }
+        }
+
+        function parseCSVFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+                if (lines.length <= 1) {
+                    showToast("Fail CSV kosong atau format tidak betul.", "warning");
+                    return;
+                }
+
+                // Detect header mapping
+                const headers = parseCSVLine(lines[0]).map(h => h.toUpperCase().trim());
+                
+                let idxNama = headers.findIndex(h => h.includes('NAMA') || h.includes('NAME') || h.includes('MURID') || h.includes('PELAJAR'));
+                let idxKelas = headers.findIndex(h => h.includes('KELAS') || h.includes('CLASS') || h.includes('TINGKATAN'));
+                let idxId = headers.findIndex(h => h.includes('ID') || h.includes('EMEL') || h.includes('EMAIL') || h.includes('DELIMA'));
+                let idxStatus = headers.findIndex(h => h.includes('STATUS'));
+                let idxPw = headers.findIndex(h => h.includes('LALUAN') || h.includes('KATALALUAN') || h.includes('PASSWORD') || h.includes('KATA'));
+                let idxBil = headers.findIndex(h => h === 'BIL' || h === 'NO' || h === 'NO.');
+
+                if (idxNama === -1) idxNama = 1 < headers.length ? 1 : 0;
+                if (idxKelas === -1) idxKelas = 2 < headers.length ? 2 : 0;
+                if (idxId === -1) idxId = 3 < headers.length ? 3 : 0;
+
+                const parsed = [];
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = parseCSVLine(lines[i]);
+                    if (cols.length > 0 && cols.some(c => c.trim() !== '')) {
+                        const namaVal = cols[idxNama] || `Murid ${i}`;
+                        const kelasVal = cols[idxKelas] || 'Tahun 1';
+                        const idVal = cols[idxId] || '—';
+                        
+                        let statusVal = 'BELUM ADA';
+                        if (idxStatus !== -1 && cols[idxStatus]) {
+                            statusVal = cols[idxStatus].toUpperCase();
+                        } else if (idVal && idVal !== '—' && idVal.includes('@')) {
+                            statusVal = 'AKTIF';
+                        }
+
+                        const pwVal = (idxPw !== -1 && cols[idxPw]) ? cols[idxPw] : DEFAULT_PASSWORD;
+                        const bilVal = (idxBil !== -1 && cols[idxBil]) ? cols[idxBil] : i;
+
+                        parsed.push({
+                            bil: bilVal,
+                            nama: namaVal,
+                            kelas: kelasVal,
+                            idDelima: idVal,
+                            status: statusVal,
+                            kataLaluan: pwVal
+                        });
+                    }
+                }
+
+                if (parsed.length > 0) {
+                    currentData = parsed;
+                    filteredData = [...currentData];
+                    
+                    // Save to local storage for persistence
+                    try {
+                        localStorage.setItem('skk_delima_csv_data', JSON.stringify(parsed));
+                        localStorage.setItem('skk_delima_csv_name', file.name);
+                    } catch (err) {
+                        console.warn("Storage full or restricted", err);
+                    }
+
+                    const badge = document.getElementById('dataSyncBadge');
+                    if (badge) {
+                        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400"></span> ${file.name}`;
+                        badge.className = "text-xs font-medium text-blue-300 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-500/40 flex items-center gap-1";
+                    }
+                    
+                    populateClassDropdown();
+                    renderDashboard();
+                    handleStudentSearch();
+                    showToast(`Fail CSV ${file.name} berjaya dimuat naik (${parsed.length} murid)!`, "success");
+                } else {
+                    showToast("Tiada rekod sah dijumpai dalam fail CSV.", "warning");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function loadStoredSettings() {
+            const storedCsv = localStorage.getItem('skk_delima_csv_data');
+            const storedCsvName = localStorage.getItem('skk_delima_csv_name') || 'Fail CSV Data SK Kerubong';
+
+            if (storedCsv) {
+                try {
+                    const parsedData = JSON.parse(storedCsv);
+                    if (Array.isArray(parsedData) && parsedData.length > 0) {
+                        currentData = parsedData;
+                        filteredData = [...currentData];
+                        const badge = document.getElementById('dataSyncBadge');
+                        if (badge) {
+                            badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-400"></span> ${storedCsvName}`;
+                            badge.className = "text-xs font-medium text-blue-300 bg-blue-950/80 px-2 py-0.5 rounded border border-blue-500/40 flex items-center gap-1";
+                        }
+                        populateClassDropdown();
+                        renderDashboard();
+                        handleStudentSearch();
+                        return;
+                    }
+                } catch(e) {
+                    console.error("Error reading stored CSV", e);
+                }
+            }
+
+            const savedUrl = localStorage.getItem('skk_delima_sheet_url');
+            if (savedUrl) {
+                const inputField = document.getElementById('sheetUrlInput');
+                if (inputField) inputField.value = savedUrl;
+                fetchRemoteData(savedUrl);
+            } else {
+                // If no saved URL or CSV, render clean empty dashboard
+                populateClassDropdown();
+                renderDashboard();
+                handleStudentSearch();
+            }
+        }
+
+        function fetchRemoteData(url) {
+            if (!url) return;
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        currentData = data.map((item, index) => ({
+                            bil: item.bil || index + 1,
+                            nama: item.nama || item.NAMA || '—',
+                            kelas: item.kelas || item.KELAS || '—',
+                            idDelima: item.idDelima || item.ID || item.EMEL || '—',
+                            status: (item.status || item.STATUS || (item.idDelima && item.idDelima.includes('@') ? 'AKTIF' : 'BELUM ADA')).toUpperCase(),
+                            kataLaluan: item.kataLaluan || item.KATALALUAN || item.PASSWORD || DEFAULT_PASSWORD
+                        }));
+                        filteredData = [...currentData];
+
+                        const badge = document.getElementById('dataSyncBadge');
+                        if (badge) {
+                            badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Google Sheets Live`;
+                            badge.className = "text-xs font-medium text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1";
+                        }
+
+                        populateClassDropdown();
+                        renderDashboard();
+                        handleStudentSearch();
+                        showToast("Data berjaya dikemaskini dari Google Sheets!", "success");
+                    }
+                })
+                .catch(err => {
+                    console.warn("Could not fetch remote data", err);
+                    showToast("Tidak dapat menyambung ke Google Sheets. Sila semak sambungan.", "warning");
+                    populateClassDropdown();
+                    renderDashboard();
+                    handleStudentSearch();
+                })
+                .finally(() => {
+                    if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+                });
+        }
+
+        function resetToSampleData() {
+            localStorage.removeItem('skk_delima_csv_data');
+            localStorage.removeItem('skk_delima_csv_name');
+            localStorage.removeItem('skk_delima_sheet_url');
+            currentData = [];
+            filteredData = [];
+
+            const badge = document.getElementById('dataSyncBadge');
+            if (badge) {
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Tiada Data`;
+                badge.className = "text-xs font-medium text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1";
+            }
+
+            populateClassDropdown();
+            renderDashboard();
+            handleStudentSearch();
+            closeConnectModal();
+            showToast("Semua data telah dipadamkan.", "info");
+        }
+
+        function fetchRemoteData(url) {
+            if (!url) return;
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) refreshIcon.classList.add('animate-spin');
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        currentData = data.map((item, index) => ({
+                            bil: item.bil || index + 1,
+                            nama: item.nama || item.NAMA || '—',
+                            kelas: item.kelas || item.KELAS || '—',
+                            idDelima: item.idDelima || item.ID || item.EMEL || '—',
+                            status: (item.status || item.STATUS || (item.idDelima && item.idDelima.includes('@') ? 'AKTIF' : 'BELUM ADA')).toUpperCase(),
+                            kataLaluan: item.kataLaluan || item.KATALALUAN || item.PASSWORD || DEFAULT_PASSWORD
+                        }));
+                        filteredData = [...currentData];
+
+                        const badge = document.getElementById('dataSyncBadge');
+                        if (badge) {
+                            badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Google Sheets Live`;
+                            badge.className = "text-xs font-medium text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1";
+                        }
+
+                        populateClassDropdown();
+                        renderDashboard();
+                        handleStudentSearch();
+                        showToast("Data berjaya dikemaskini dari Google Sheets!", "success");
+                    }
+                })
+                .catch(err => {
+                    console.warn("Falling back to sample data", err);
+                    showToast("Tidak dapat menyambung ke Google Sheets. Menggunakan data sedia ada.", "warning");
+                    populateClassDropdown();
+                    renderDashboard();
+                    handleStudentSearch();
+                })
+                .finally(() => {
+                    if (refreshIcon) refreshIcon.classList.remove('animate-spin');
+                });
+        }
+
+        function resetToSampleData() {
+            localStorage.removeItem('skk_delima_csv_data');
+            localStorage.removeItem('skk_delima_csv_name');
+            localStorage.removeItem('skk_delima_sheet_url');
+            currentData = [...SAMPLE_STUDENTS];
+            filteredData = [...SAMPLE_STUDENTS];
+
+            const badge = document.getElementById('dataSyncBadge');
+            if (badge) {
+                badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Data Tempatan`;
+                badge.className = "text-xs font-medium text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1";
+            }
+
+            populateClassDropdown();
+            renderDashboard();
+            handleStudentSearch();
+            closeConnectModal();
+            showToast("Data telah diset semula ke data sampel asal.", "info");
+        }
+
+        function openConnectModal() {
+            const modal = document.getElementById('connectModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeConnectModal() {
+            const modal = document.getElementById('connectModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function toggleScriptGuide() {
+            const content = document.getElementById('scriptGuideContent');
+            const chevron = document.getElementById('guideChevron');
+            if (content && chevron) {
+                content.classList.toggle('hidden');
+                chevron.classList.toggle('rotate-180');
+            }
+        }
+
+        function saveConnectionSettings() {
+            const urlInput = document.getElementById('sheetUrlInput');
+            const url = urlInput ? urlInput.value.trim() : '';
+            if (url) {
+                localStorage.setItem('skk_delima_sheet_url', url);
+                localStorage.removeItem('skk_delima_csv_data');
+                localStorage.removeItem('skk_delima_csv_name');
+                fetchRemoteData(url);
+                closeConnectModal();
+            } else {
+                showToast("Sila masukkan URL Google Sheets yang sah.", "warning");
+            }
+        }
+
+        function refreshData() {
+            const storedCsv = localStorage.getItem('skk_delima_csv_data');
+            if (storedCsv) {
+                loadStoredSettings();
+                showToast("Data fail CSV berjaya dimuat semula!", "info");
+            } else {
+                const url = localStorage.getItem('skk_delima_sheet_url') || DEFAULT_SHEET_URL;
+                fetchRemoteData(url);
+            }
+        }
+
+        function populateClassDropdown() {
+            const selectClass = document.getElementById('filterClass');
+            const selectedYear = document.getElementById('filterYear') ? document.getElementById('filterYear').value : '';
+            if (!selectClass) return;
+
+            const currentSelected = selectClass.value;
+            let classes = [...new Set(currentData.map(s => s.kelas).filter(Boolean))].sort();
+
+            if (selectedYear) {
+                classes = classes.filter(c => c.toLowerCase().startsWith(selectedYear.toLowerCase()));
+            }
+
+            selectClass.innerHTML = '<option value="">Semua Kelas</option>' + 
+                classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            if (classes.includes(currentSelected)) {
+                selectClass.value = currentSelected;
+            }
+        }
+
+        function openAdminLoginModal() {
+            const modal = document.getElementById('adminLoginModal');
+            const input = document.getElementById('adminPasswordInput');
+            const errorMsg = document.getElementById('adminLoginError');
+            if (errorMsg) errorMsg.classList.add('hidden');
+            if (input) input.value = '';
+            if (modal) modal.classList.remove('hidden');
+            setTimeout(() => { if (input) input.focus(); }, 150);
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeAdminLoginModal() {
+            const modal = document.getElementById('adminLoginModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function toggleAdminPasswordVisibility() {
+            const input = document.getElementById('adminPasswordInput');
+            const eyeIcon = document.getElementById('adminPwEyeIcon');
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                if (eyeIcon) eyeIcon.setAttribute('data-lucide', 'eye-off');
+            } else {
+                input.type = 'password';
+                if (eyeIcon) eyeIcon.setAttribute('data-lucide', 'eye');
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function handleAdminLoginSubmit(e) {
+            if (e) e.preventDefault();
+            const input = document.getElementById('adminPasswordInput');
+            const errorMsg = document.getElementById('adminLoginError');
+            const pwd = input ? input.value.trim() : '';
+
+            if (pwd === 'MBA2030') {
+                isAdminLoggedIn = true;
+                closeAdminLoginModal();
+                switchMainMode('admin');
+                showToast("Akses Dashboard Guru disahkan!", "success");
+            } else {
+                if (errorMsg) errorMsg.classList.remove('hidden');
+                showToast("Kata laluan Admin salah!", "warning");
+            }
+        }
+
+        function lockAdminDashboard() {
+            isAdminLoggedIn = false;
+            switchMainMode('student');
+            showToast("Dashboard Guru telah dikunci.", "info");
+        }
+
+        function switchMainMode(mode) {
+            const studentSec = document.getElementById('studentPortalSection');
+            const adminSec = document.getElementById('adminDashboardSection');
+            const btnStudent = document.getElementById('btnModeStudent');
+            const btnAdmin = document.getElementById('btnModeAdmin');
+            const btnLock = document.getElementById('btnLockAdmin');
+
+            if (mode === 'admin' && !isAdminLoggedIn) {
+                openAdminLoginModal();
+                return;
+            }
+
+            if (mode === 'student') {
+                if (studentSec) studentSec.classList.remove('hidden');
+                if (adminSec) adminSec.classList.add('hidden');
+                if (btnLock) btnLock.classList.add('hidden');
+                
+                if (btnStudent) {
+                    btnStudent.className = "px-3 py-1.5 rounded-lg bg-amber-500 text-navy-900 transition-all flex items-center gap-1 font-bold shadow-sm";
+                }
+                if (btnAdmin) {
+                    btnAdmin.className = "px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1 font-semibold";
+                }
+            } else {
+                if (studentSec) studentSec.classList.add('hidden');
+                if (adminSec) adminSec.classList.remove('hidden');
+                if (btnLock) btnLock.classList.remove('hidden');
+
+                if (btnStudent) {
+                    btnStudent.className = "px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all flex items-center gap-1 font-semibold";
+                }
+                if (btnAdmin) {
+                    btnAdmin.className = "px-3 py-1.5 rounded-lg bg-amber-500 text-navy-900 transition-all flex items-center gap-1 font-bold shadow-sm";
+                }
+                renderDashboard();
+            }
+        }
+
+        function handleStudentSearch() {
+            const input = document.getElementById('studentSearchInput');
+            const clearBtn = document.getElementById('btnClearStudentSearch');
+            const resultsContainer = document.getElementById('studentSearchResultsContainer');
+            const resultsGrid = document.getElementById('studentResultsGrid');
+            const initialState = document.getElementById('studentInitialState');
+            const noResultsState = document.getElementById('studentNoResultsState');
+            const countBadge = document.getElementById('matchingCountBadge');
+
+            if (!input) return;
+
+            const query = input.value.trim().toLowerCase();
+
+            if (clearBtn) {
+                if (query.length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+
+            if (query === '') {
+                if (resultsContainer) resultsContainer.classList.add('hidden');
+                if (noResultsState) noResultsState.classList.add('hidden');
+                if (initialState) initialState.classList.remove('hidden');
+                return;
+            }
+
+            if (initialState) initialState.classList.add('hidden');
+
+            const matches = currentData.filter(s => 
+                s.nama.toLowerCase().includes(query) || 
+                (s.kelas && s.kelas.toLowerCase().includes(query))
+            );
+
+            if (matches.length > 0) {
+                if (noResultsState) noResultsState.classList.add('hidden');
+                if (resultsContainer) resultsContainer.classList.remove('hidden');
+                if (countBadge) countBadge.innerText = `${matches.length} dijumpai`;
+
+                if (resultsGrid) {
+                    resultsGrid.innerHTML = matches.map(s => {
+                        let badgeColor = "bg-emerald-100 text-emerald-800 border-emerald-300";
+                        if (s.status === "PERLU SEMAKAN") badgeColor = "bg-amber-100 text-amber-800 border-amber-300";
+                        if (s.status === "BELUM ADA") badgeColor = "bg-rose-100 text-rose-800 border-rose-300";
+
+                        return `
+                            <div onclick="openStudentModalByBil(${s.bil})" class="p-4 bg-white hover:bg-amber-50/50 border-2 border-slate-200 hover:border-amber-400 rounded-2xl cursor-pointer transition-all shadow-sm hover:shadow-md flex flex-col justify-between space-y-3 group">
+                                <div class="flex items-start justify-between gap-2">
+                                    <div>
+                                        <span class="text-[11px] font-extrabold uppercase px-2 py-0.5 rounded-md bg-navy-900 text-amber-400">
+                                            ${s.kelas}
+                                        </span>
+                                        <h4 class="font-bold text-slate-800 text-sm sm:text-base mt-1.5 group-hover:text-amber-600 transition-colors">
+                                            ${s.nama}
+                                        </h4>
+                                    </div>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeColor} shrink-0">
+                                        ${s.status}
+                                    </span>
+                                </div>
+                                <div class="flex items-center justify-between pt-2 border-t border-slate-100 text-xs font-semibold text-slate-500">
+                                    <span class="flex items-center gap-1 text-amber-600">
+                                        <i data-lucide="key" class="w-3.5 h-3.5"></i> Klik untuk Semak ID & PW
+                                    </span>
+                                    <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } else {
+                if (resultsContainer) resultsContainer.classList.add('hidden');
+                if (noResultsState) noResultsState.classList.remove('hidden');
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function clearStudentSearch() {
+            const input = document.getElementById('studentSearchInput');
+            if (input) input.value = '';
+            handleStudentSearch();
+        }
+
+        function handleSearch() {
+            const input = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('btnClearSearch');
+
+            if (input && clearBtn) {
+                if (input.value.trim().length > 0) clearBtn.classList.remove('hidden');
+                else clearBtn.classList.add('hidden');
+            }
+            handleFilterChange();
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            if (input) input.value = '';
+            handleSearch();
+        }
+
+        function handleFilterChange() {
+            const searchVal = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+            const yearVal = (document.getElementById('filterYear')?.value || '').toLowerCase();
+            const classVal = (document.getElementById('filterClass')?.value || '').toLowerCase();
+            const statusVal = (document.getElementById('filterStatus')?.value || '').toUpperCase();
+
+            filteredData = currentData.filter(student => {
+                const matchesSearch = !searchVal || 
+                    student.nama.toLowerCase().includes(searchVal) || 
+                    (student.idDelima && student.idDelima.toLowerCase().includes(searchVal));
+
+                const matchesYear = !yearVal || (student.kelas && student.kelas.toLowerCase().startsWith(yearVal));
+                const matchesClass = !classVal || (student.kelas && student.kelas.toLowerCase() === classVal);
+                const matchesStatus = !statusVal || student.status === statusVal;
+
+                return matchesSearch && matchesYear && matchesClass && matchesStatus;
+            });
+
+            // Sync tab active states
+            document.querySelectorAll('.year-tab').forEach(tab => {
+                const tabYear = tab.getAttribute('data-year') || '';
+                const selectedYear = document.getElementById('filterYear')?.value || '';
+                if (tabYear === selectedYear) {
+                    tab.className = "year-tab px-3 py-1.5 rounded-lg bg-navy-900 text-white shadow-sm transition-all whitespace-nowrap font-bold";
+                } else {
+                    tab.className = "year-tab px-3 py-1.5 rounded-lg hover:bg-slate-200 text-slate-700 transition-all whitespace-nowrap font-semibold";
+                }
+            });
+
+            renderDashboard();
+        }
+
+        function selectYearTab(year) {
+            const selectYear = document.getElementById('filterYear');
+            if (selectYear) selectYear.value = year;
+            populateClassDropdown();
+            const selectClass = document.getElementById('filterClass');
+            if (selectClass) selectClass.value = '';
+            handleFilterChange();
+        }
+
+        function toggleViewMode() {
+            const tableSec = document.getElementById('tableViewSection');
+            const analyticsSec = document.getElementById('classAnalyticsSection');
+            const btnText = document.getElementById('toggleViewText');
+
+            if (currentView === 'table') {
+                currentView = 'analytics';
+                if (tableSec) tableSec.classList.add('hidden');
+                if (analyticsSec) analyticsSec.classList.remove('hidden');
+                if (btnText) btnText.innerText = 'Jadual Murid';
+            } else {
+                currentView = 'table';
+                if (tableSec) tableSec.classList.remove('hidden');
+                if (analyticsSec) analyticsSec.classList.add('hidden');
+                if (btnText) btnText.innerText = 'Ringkasan Kelas';
+            }
+        }
+
+        function renderDashboard() {
+            // Metrics calculation
+            const total = currentData.length;
+            const complete = currentData.filter(s => s.status === 'AKTIF').length;
+            const pending = currentData.filter(s => s.status !== 'AKTIF').length;
+            const rate = total > 0 ? Math.round((complete / total) * 100) : 0;
+
+            const elTotal = document.getElementById('statTotalStudents');
+            const elComplete = document.getElementById('statCompleteIds');
+            const elPending = document.getElementById('statPendingIds');
+            const elRate = document.getElementById('statCompletionRate');
+            const elCount = document.getElementById('resultsCountBadge');
+
+            if (elTotal) elTotal.innerText = total;
+            if (elComplete) elComplete.innerText = complete;
+            if (elPending) elPending.innerText = pending;
+            if (elRate) elRate.innerText = `${rate}%`;
+            if (elCount) elCount.innerText = `${filteredData.length} rekod`;
+
+            // Table Rendering
+            const tableBody = document.getElementById('studentTableBody');
+            const emptyState = document.getElementById('emptyState');
+
+            if (tableBody) {
+                if (filteredData.length === 0) {
+                    tableBody.innerHTML = '';
+                    if (emptyState) emptyState.classList.remove('hidden');
+                } else {
+                    if (emptyState) emptyState.classList.add('hidden');
+                    tableBody.innerHTML = filteredData.map((s, idx) => {
+                        let statusBadge = `<span class="px-2.5 py-1 text-[11px] font-extrabold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">🟢 AKTIF</span>`;
+                        if (s.status === 'PERLU SEMAKAN') {
+                            statusBadge = `<span class="px-2.5 py-1 text-[11px] font-extrabold rounded-full bg-amber-100 text-amber-800 border border-amber-300">🟠 SEMAKAN</span>`;
+                        } else if (s.status === 'BELUM ADA') {
+                            statusBadge = `<span class="px-2.5 py-1 text-[11px] font-extrabold rounded-full bg-rose-100 text-rose-800 border border-rose-300">🔴 TIADA ID</span>`;
+                        }
+
+                        return `
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="py-3 px-4 text-center font-bold text-slate-400">${s.bil || idx + 1}</td>
+                                <td class="py-3 px-4 font-bold text-navy-900">${s.nama}</td>
+                                <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold text-xs">${s.kelas}</span></td>
+                                <td class="py-3 px-4 font-mono font-medium text-blue-700">${s.idDelima}</td>
+                                <td class="py-3 px-4 text-center">${statusBadge}</td>
+                                <td class="py-3 px-4 text-center">
+                                    <button onclick="openStudentModalByBil(${s.bil})" class="px-3 py-1 bg-amber-500 hover:bg-amber-600 text-navy-900 font-bold rounded-lg text-xs transition-all shadow-sm">
+                                        Papar
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
+
+            // Analytics Section Rendering
+            const analyticsSec = document.getElementById('classAnalyticsSection');
+            if (analyticsSec) {
+                const classesMap = {};
+                currentData.forEach(s => {
+                    if (!classesMap[s.kelas]) {
+                        classesMap[s.kelas] = { total: 0, active: 0, pending: 0 };
+                    }
+                    classesMap[s.kelas].total++;
+                    if (s.status === 'AKTIF') classesMap[s.kelas].active++;
+                    else classesMap[s.kelas].pending++;
+                });
+
+                analyticsSec.innerHTML = Object.keys(classesMap).sort().map(className => {
+                    const info = classesMap[className];
+                    const pct = Math.round((info.active / info.total) * 100) || 0;
+
+                    return `
+                        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold text-navy-900 text-base">${className}</h4>
+                                <span class="text-xs font-extrabold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">${pct}% Lengkap</span>
+                            </div>
+                            <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                                <div class="bg-amber-500 h-2.5 rounded-full" style="width: ${pct}%"></div>
+                            </div>
+                            <div class="flex items-center justify-between text-xs font-semibold text-slate-500 pt-1">
+                                <span>Jumlah: <b>${info.total}</b></span>
+                                <span class="text-emerald-600">Aktif: <b>${info.active}</b></span>
+                                <span class="text-amber-600">Perlu Semakan: <b>${info.pending}</b></span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openStudentModalByBil(bil) {
+            const student = currentData.find(s => s.bil == bil || s.nama === bil);
+            if (!student) return;
+
+            currentSelectedStudent = student;
+            isPasswordVisible = false;
+
+            const modal = document.getElementById('studentDetailModal');
+            const classBadge = document.getElementById('modalStudentClassBadge');
+            const fullName = document.getElementById('modalStudentFullName');
+            const delimaId = document.getElementById('modalStudentDelimaId');
+            const password = document.getElementById('modalStudentPassword');
+            const statusBadge = document.getElementById('modalStatusBadge');
+            const pwText = document.getElementById('pwToggleText');
+            const pwEye = document.getElementById('pwEyeIcon');
+
+            if (classBadge) classBadge.innerText = student.kelas;
+            if (fullName) fullName.innerText = student.nama;
+            if (delimaId) delimaId.innerText = student.idDelima;
+            if (password) password.innerText = '••••••••';
+            if (pwText) pwText.innerText = 'Papar';
+            if (pwEye) pwEye.setAttribute('data-lucide', 'eye');
+
+            if (statusBadge) {
+                if (student.status === 'AKTIF') {
+                    statusBadge.className = "px-2 py-0.5 font-bold rounded bg-emerald-100 text-emerald-800 text-[10px]";
+                    statusBadge.innerText = "AKTIF";
+                } else if (student.status === 'PERLU SEMAKAN') {
+                    statusBadge.className = "px-2 py-0.5 font-bold rounded bg-amber-100 text-amber-800 text-[10px]";
+                    statusBadge.innerText = "PERLU SEMAKAN";
+                } else {
+                    statusBadge.className = "px-2 py-0.5 font-bold rounded bg-rose-100 text-rose-800 text-[10px]";
+                    statusBadge.innerText = "BELUM ADA";
+                }
+            }
+
+            if (modal) modal.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function closeStudentModal() {
+            const modal = document.getElementById('studentDetailModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function togglePasswordVisibility() {
+            if (!currentSelectedStudent) return;
+
+            isPasswordVisible = !isPasswordVisible;
+            const password = document.getElementById('modalStudentPassword');
+            const pwText = document.getElementById('pwToggleText');
+            const pwEye = document.getElementById('pwEyeIcon');
+
+            if (isPasswordVisible) {
+                if (password) password.innerText = currentSelectedStudent.kataLaluan || DEFAULT_PASSWORD;
+                if (pwText) pwText.innerText = 'Sembunyi';
+                if (pwEye) pwEye.setAttribute('data-lucide', 'eye-off');
+            } else {
+                if (password) password.innerText = '••••••••';
+                if (pwText) pwText.innerText = 'Papar';
+                if (pwEye) pwEye.setAttribute('data-lucide', 'eye');
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function copyModalId() {
+            if (!currentSelectedStudent) return;
+            const textToCopy = currentSelectedStudent.idDelima;
+            copyToClipboard(textToCopy, "ID DELIMa berjaya disalin!");
+        }
+
+        function copyModalPassword() {
+            if (!currentSelectedStudent) return;
+            const textToCopy = currentSelectedStudent.kataLaluan || DEFAULT_PASSWORD;
+            copyToClipboard(textToCopy, "Kata Laluan berjaya disalin!");
+        }
+
+        function copyToClipboard(text, successMsg) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast(successMsg, "success");
+                }).catch(() => {
+                    fallbackCopy(text, successMsg);
+                });
+            } else {
+                fallbackCopy(text, successMsg);
+            }
+        }
+
+        function fallbackCopy(text, successMsg) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showToast(successMsg, "success");
+            } catch (err) {
+                showToast("Gagal menyalin teks", "warning");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast(message, type = "info") {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+            if (!toast || !toastMessage) return;
+
+            toastMessage.innerText = message;
+
+            if (toastIcon) {
+                if (type === 'success') {
+                    toastIcon.setAttribute('data-lucide', 'check-circle');
+                    toastIcon.className = 'w-5 h-5 text-emerald-400';
+                } else if (type === 'warning') {
+                    toastIcon.setAttribute('data-lucide', 'alert-triangle');
+                    toastIcon.className = 'w-5 h-5 text-amber-400';
+                } else {
+                    toastIcon.setAttribute('data-lucide', 'info');
+                    toastIcon.className = 'w-5 h-5 text-blue-400';
+                }
+            }
+
+            if (window.lucide) lucide.createIcons();
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadStoredSettings();
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>
